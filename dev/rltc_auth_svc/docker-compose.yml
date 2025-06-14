@@ -1,0 +1,46 @@
+services:
+  rltc-auth-svc:
+    build:
+      context: ${PATH_TO_REPOSITORIES}/rltc-auth-svc/auth
+      dockerfile: Dockerfile 
+    environment:
+      POSTGRES_IP: ${POSTGRES_IP}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    
+    depends_on:
+      - postgres
+    
+    ports:
+      - "18080:8080"    
+    networks:
+      rltc_network:
+        ipv4_address: ${RLTC_AUTH_IP}
+
+  postgres:
+    image: postgres:16
+    container_name: auth_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    networks:
+      rltc_network:
+        ipv4_address: ${POSTGRES_IP}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+networks:
+  rltc_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet:  ${SUBNET}
+
+volumes:
+  postgres_data:
